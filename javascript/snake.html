@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Snake Game</title>
+    <style>
+        body { background: #1A0B2E; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        canvas { border: 2px solid #F9A8D4; background: #0D041C; }
+        .info { color: #F9A8D4; font-family: monospace; text-align: center; margin-top: 10px; }
+    </style>
+</head>
+<body>
+<div>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <div class="info">Score: <span id="score">0</span> | Arrow keys to move | R to restart</div>
+</div>
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const box = 20;
+    const rows = canvas.height / box;
+    const cols = canvas.width / box;
+
+    let snake = [{x: 10, y: 10}];
+    let direction = 'RIGHT';
+    let food = {x: 15, y: 10};
+    let score = 0;
+    let gameLoop;
+
+    function draw() {
+        ctx.fillStyle = '#0D041C';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#F9A8D4';
+        for (let s of snake) {
+            ctx.fillRect(s.x * box, s.y * box, box-2, box-2);
+        }
+        ctx.fillStyle = '#C084FC';
+        ctx.fillRect(food.x * box, food.y * box, box-2, box-2);
+        document.getElementById('score').innerText = score;
+    }
+
+    function move() {
+        let head = {...snake[0]};
+        switch(direction) {
+            case 'RIGHT': head.x += 1; break;
+            case 'LEFT': head.x -= 1; break;
+            case 'UP': head.y -= 1; break;
+            case 'DOWN': head.y += 1; break;
+        }
+        snake.unshift(head);
+        if (head.x === food.x && head.y === food.y) {
+            score++;
+            food = {x: Math.floor(Math.random() * cols), y: Math.floor(Math.random() * rows)};
+        } else {
+            snake.pop();
+        }
+        if (head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows || snake.slice(1).some(seg => seg.x === head.x && seg.y === head.y)) {
+            clearInterval(gameLoop);
+            alert(`Game Over! Score: ${score}`);
+            resetGame();
+        }
+        draw();
+    }
+
+    function resetGame() {
+        snake = [{x: 10, y: 10}];
+        direction = 'RIGHT';
+        score = 0;
+        food = {x: 15, y: 10};
+        if (gameLoop) clearInterval(gameLoop);
+        gameLoop = setInterval(move, 120);
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowUp' && direction !== 'DOWN') direction = 'UP';
+        else if (e.key === 'ArrowDown' && direction !== 'UP') direction = 'DOWN';
+        else if (e.key === 'ArrowLeft' && direction !== 'RIGHT') direction = 'LEFT';
+        else if (e.key === 'ArrowRight' && direction !== 'LEFT') direction = 'RIGHT';
+        else if (e.key === 'r' || e.key === 'R') resetGame();
+    });
+    resetGame();
+</script>
+</body>
+</html>
